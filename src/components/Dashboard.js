@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 //for general style of MaterialUI
 import { makeStyles } from "@material-ui/core/styles";
 //for paper items--
@@ -25,6 +25,7 @@ import TextField from '@material-ui/core/TextField';
 //
 
 import {CTX} from './Store';
+
 
 
 
@@ -60,16 +61,31 @@ export default function Dashboard() {
 
   const classes = useStyles();
 
-  const {allChats, sendChatAction, user} = React.useContext(CTX);
+  const {allChats, sendChatAction, enterChatRoomAction, user} = React.useContext(CTX);
 
   console.log({allChats});
 
+  //pulls off all of the keys from the all chats Object
   const topics = Object.keys(allChats);
 
   //local state
   const [activeTopic, changeActiveTopic] = React.useState(topics[0])
-  const [textValue, changeTextValue] = React.useState('')
 
+  const [textValue, changeTextValue] = React.useState('')
+  
+  const [messages, setMessage]= useState([])
+
+  useEffect(() =>{
+    enterChatRoomAction(activeTopic)
+  },[activeTopic])
+
+  const handleSelecTopic = (topic)=>{
+    changeActiveTopic(topic)
+    // enterChatRoomAction(topic)
+    //make request to get topic-specific message
+    // use setMessage to update message state
+    // map over messages 
+  }
   return (
     <div>
         {/* Component to break 1 */}
@@ -88,7 +104,9 @@ export default function Dashboard() {
             {/* List Items */}
             <List>
               {topics.map(topic => (
-                <ListItem onClick={event => changeActiveTopic(event.target.innerText) } key={topic} button>
+                // on click of a list item ie a topic grab the inner text of this list item and set it as the active topic 
+                <ListItem onClick={event => handleSelecTopic(event.target.innerText) } key={topic} button>
+                  {/* change active topic to handleSelectTopic */}
                   <ListItemText primary={topic} />
                 </ListItem>
               ))}
@@ -100,11 +118,14 @@ export default function Dashboard() {
           <div className={classes.chatWindow}>
 
             {
+              //grab our all chats object with the value of our active topic 
                 allChats[activeTopic].map((chat, i) => (
-            
+                  //map over each chat
                <div className={classes.flex} key={i}>
-                   <Chip label={chat.from} variant="outlined" />
-                    <Typography variant='body1' gutterBottom>{chat.msg}</Typography>
+                 {/* display who its from */}
+                   <Chip label={chat.user} variant="outlined" />
+                   {/* Display the message */}
+                    <Typography variant='body1' gutterBottom>{chat.message}</Typography>
                </div>
             
             ))
@@ -131,7 +152,8 @@ export default function Dashboard() {
         color="primary" 
         className={classes.button}
         onClick={() => {
-            sendChatAction({from: user, msg: textValue, topic: activeTopic})
+          //this is where we are sending out data, this is how the object will look
+            sendChatAction({user, message: textValue, topic: activeTopic})
             changeTextValue('');
         }
             }

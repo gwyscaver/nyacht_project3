@@ -1,7 +1,8 @@
 import React from 'react';
 import io from 'socket.io-client'
+import axios from 'axios';
 
-
+//provides a way to pass data through the componenet tree without using props. 
 export const CTX = React.createContext();
 
 
@@ -11,33 +12,49 @@ export const CTX = React.createContext();
 //topic: 'general'
 
 const initState = {
-    general: [
-        {from: 'john', msg:'this is rough'},
-        {from: 'john', msg:'really rough'},
+    //topic or catagory 
+    General: [
+        //messages in those catagoires 
+        {from: 'General Bot', msg:'Welcome to our Cruise!'},
+       
     ],
-    topic2: [
-        {from: 'john', msg:'this is rough'},
-        {from: 'john', msg:'really rough'},
+    NightLife: [
+        {from: 'Night Life Bot', msg:'Welcome to the Night Life Page!'},
+       
 
+    ],
+    Families: [
+        {from: 'Family Bot', msg:'Welcome Families!'}
+    ],
+    Outings: [
+        {from: 'Outings Bot', msg:'Welcome to the Outings Page!'}
     ]
+
+
 }
 
+//action is an object that we pass in
 const reducer = (state, action) => {
 
     //destruct to make more clean 
-    const {from, msg, topic} = action.payload;
     switch(action.type){
         case 'RECEIVE_MESSAGE':
-        return {
-            //bring in our entire state
-            ...state,
-            //then pull the specific topic 
-            [topic]: 
-            [
-                //then bring forward all old messages in the topic
-            ...state[topic], {from, msg}
-            ]
-        }
+            const {user, message, topic} = action.payload;
+            return {
+                //bring in our entire state
+                ...state,
+                //then overwrite the old state with the new object in front
+                [topic]: 
+                [
+                    //then bring forward all old messages in the topic
+                ...state[topic], {user, message}
+                ]
+            }
+        case 'FETCH_MESSAGES' :
+            return{
+                ...state,
+                ...action.payload
+            }
         default:
             return state
     }
@@ -45,8 +62,15 @@ const reducer = (state, action) => {
 
 let socket;
 
+//this is our funnction to emit someyhing
 function sendChatAction(value){
-    socket.emit("chat message", value)
+
+     socket.emit("chat message", value) 
+}
+
+function enterChatRoomAction(value){
+    
+    socket.emit("chatroom enter", value)
 }
 
 export default function Store(props) {
@@ -57,18 +81,31 @@ export default function Store(props) {
         socket = io(':3002')
         socket.on('chat message', function(msg){
             console.log("Message test ", msg)
-           dispatch({type: 'RECEIVE_MESSAGE', payload: msg});
+           dispatch({ type: 'RECEIVE_MESSAGE', payload: msg });
     })
+        socket.on('chatroom enter', function(chatroom){
+            console.log("chatroom enter", chatroom)
+            axios.get(`/chat/allchannels/${chatroom}`)
+            .then(function(results){
+                console.log(results)
+                dispatch({ type: 'FETCH_MESSAGES', payload: { [chatroom] : results.data } })
+            })
+
+        })
 }
 
 //temporary
+//---------------
+//define user here
 const user = 'John' + Math.random(100).toFixed(2);
 
+///--------
 
 
 
     return (
-        <CTX.Provider value={{allChats, sendChatAction, user}}>
+        //values that are being passed to all childern nested with this component
+        <CTX.Provider value={{allChats, sendChatAction, enterChatRoomAction, user}}>
             {props.children}
         </CTX.Provider>
     )
