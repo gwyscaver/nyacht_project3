@@ -23,7 +23,6 @@ export default class App extends Component {
     name:"",
     password:"",
     loggedInUser:"",
-    manateeName:"",
     url:"http://localhost:3003",
     // url:"https://manateepi.herokuapp.com",
   }
@@ -40,7 +39,7 @@ export default class App extends Component {
   }
   readSessions = ()=>{
     axios.get(`${this.state.url}/auth/readsessions`,{withCredentials:true}).then(res=>{
-      console.log(res.data)
+      console.log("Cookie", res.data)
       this.setState({loggedInUser:res.data.user})
     })
   }
@@ -92,10 +91,10 @@ export default class App extends Component {
        this.state.loggedInUser?(
           
       <Store>
-      <DashBoard />
+      <DashBoard user={this.state.loggedInUser.name} />
       </Store>
         
-          ):(null)}/>
+          ):console.log("not logged in my guy")}/>
   
     </div>
     </Router>

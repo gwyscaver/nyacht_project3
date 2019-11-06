@@ -25,6 +25,8 @@ import TextField from '@material-ui/core/TextField';
 //
 
 import {CTX} from './Store';
+import App from '../App';
+
 
 
 
@@ -42,12 +44,14 @@ const useStyles = makeStyles(theme => ({
   topicsWindow: {
     width: "30%",
     height: "300px",
-    borderRight: "1px solid grey"
+    borderRight: "1px solid grey",
+    overflow:"auto"
   },
   chatWindow: {
     width: "70%",
     height: "300px",
-    padding: "20px"
+    padding: "20px",
+    overflow: "auto"
   },
   chatBox: {
     width: "85%"
@@ -57,42 +61,45 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function Dashboard() {
+export default function Dashboard(props) {
 
+  //front end
   const classes = useStyles();
 
+  //importing all of the context to use within Dashbaord from store
   const {allChats, sendChatAction, enterChatRoomAction, user} = React.useContext(CTX);
 
   console.log({allChats});
 
-  //pulls off all of the keys from the all chats Object
+  //pulls off all of the keys from the all chats Object -----------------important
   const topics = Object.keys(allChats);
-
-  //local state
+//---------------------------------
+  //setting the state value of active topic 
   const [activeTopic, changeActiveTopic] = React.useState(topics[0])
-
+//setting the state value of textValue
   const [textValue, changeTextValue] = React.useState('')
-  
+//setting the state value of messages
   const [messages, setMessage]= useState([])
 
+  //essentially componenet did mount, any time the page load, and or the active topic changes, this will run
   useEffect(() =>{
+    //grabbing all of the data via our enterChatRoomAction
     enterChatRoomAction(activeTopic)
   },[activeTopic])
 
+  //this function is what handles the on click of a topic(and or channel)
   const handleSelecTopic = (topic)=>{
+
     changeActiveTopic(topic)
-    // enterChatRoomAction(topic)
-    //make request to get topic-specific message
-    // use setMessage to update message state
-    // map over messages 
   }
   return (
+   
     <div>
         {/* Component to break 1 */}
       <Paper className={classes.root}>
-
+      <Typography>Welcome {props.user}</Typography>
         <Typography variant="h4" component="h4">
-          Chat App
+          Sea Cruiser
         </Typography>
         
         <Typography variant="h5" component="h5">
@@ -103,6 +110,7 @@ export default function Dashboard() {
           <div className={classes.topicsWindow}>
             {/* List Items */}
             <List>
+              <div>Channels</div>
               {topics.map(topic => (
                 // on click of a list item ie a topic grab the inner text of this list item and set it as the active topic 
                 <ListItem onClick={event => handleSelecTopic(event.target.innerText) } key={topic} button>
@@ -110,6 +118,9 @@ export default function Dashboard() {
                   <ListItemText primary={topic} />
                 </ListItem>
               ))}
+            </List>
+            <List>
+              <div>Direct Messages</div>
             </List>
             {/* End of List Items */}
           </div>

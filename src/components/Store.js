@@ -13,6 +13,8 @@ export const CTX = React.createContext();
 
 const initState = {
     //topic or catagory 
+    Users:[],
+
     General: [
         //messages in those catagoires 
         {from: 'General Bot', msg:'Welcome to our Cruise!'},
@@ -34,6 +36,7 @@ const initState = {
 }
 
 //action is an object that we pass in
+//this state is whtever the current state is 
 const reducer = (state, action) => {
 
     //destruct to make more clean 
@@ -62,12 +65,13 @@ const reducer = (state, action) => {
 
 let socket;
 
-//this is our funnction to emit someyhing
+//this is our funnction to emit something
 function sendChatAction(value){
 
      socket.emit("chat message", value) 
 }
 
+//this is out function to handle what happens when we enter a chatroom
 function enterChatRoomAction(value){
     
     socket.emit("chatroom enter", value)
